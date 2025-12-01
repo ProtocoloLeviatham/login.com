@@ -18,9 +18,7 @@
             color: #22c55e;
             overflow-x: hidden;
             overflow-y: auto;
-            /* BLOQUEO DE GESTOS MÓVIL (Deslizar para atrás/recargar) */
-            overscroll-behavior: none;
-            touch-action: pan-x pan-y; 
+            /* Se eliminaron las restricciones de gestos para permitir el zoom libre */
         }
 
         /* Utilidades */
@@ -278,23 +276,6 @@
     </div>
 
     <script>
-        // === AJUSTES MÓVIL (ZOOM 150% Y BLOQUEO) ===
-        // Detecta si es un dispositivo móvil y aplica zoom personalizado y bloqueo de "atrás"
-        if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768) {
-            // 1. Forzar Zoom al 150% (Scale 1.5)
-            const viewport = document.querySelector('meta[name="viewport"]');
-            if(viewport) {
-                viewport.setAttribute('content', 'width=device-width, initial-scale=1.5, maximum-scale=1.5, user-scalable=no');
-            }
-
-            // 2. Bloquear botón de retroceso (Trampa de historial)
-            history.pushState(null, document.title, location.href);
-            window.addEventListener('popstate', function (event) {
-                history.pushState(null, document.title, location.href);
-            });
-        }
-        // ===========================================
-
         // === CONFIGURACIÓN ===
         const CONFIG = {
             redirectUrl: "https://www.google.com", // CAMBIA TU LINK FINAL AQUI
