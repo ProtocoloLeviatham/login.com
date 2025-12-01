@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEVIATHAM // CIBER-INTELIGENCIA</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background-color: #050505;
+            color: #22c55e;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        /* Utilidades */
+        .hidden { display: none !important; }
+        
+        /* Scrollbar Principal */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #050505; border-left: 1px solid #111; }
+        ::-webkit-scrollbar-thumb { background: #15803d; border: 1px solid #22c55e; }
+        ::-webkit-scrollbar-thumb:hover { background: #22c55e; box-shadow: 0 0 10px #22c55e; }
+
+        /* Scrollbar Hacker */
+        .hacker-scroll::-webkit-scrollbar { width: 4px; }
+        .hacker-scroll::-webkit-scrollbar-track { background: #111; }
+        .hacker-scroll::-webkit-scrollbar-thumb { background: #dc2626; } 
+
+        /* Efectos CRT y Glitch */
+        .crt::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 50;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 51;
+            background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(34, 197, 94, 0.1) 50%, rgba(0,0,0,0) 100%);
+            opacity: 0.1;
+            position: fixed;
+            bottom: 100%;
+            animation: scanline 10s linear infinite;
+            pointer-events: none;
+        }
+        @keyframes scanline { 0% { bottom: 100%; } 100% { bottom: -100px; } }
+
+        .glitch-text { position: relative; }
+        .glitch-text::before, .glitch-text::after {
+            content: attr(data-text);
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #050505;
+        }
+        .glitch-text::before {
+            left: 2px; text-shadow: -1px 0 red; clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+            animation: glitch-1 2.5s infinite linear alternate-reverse;
+        }
+        .glitch-text::after {
+            left: -2px; text-shadow: -1px 0 blue; clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+            animation: glitch-2 3s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-1 { 0% {clip-path: inset(20% 0 80% 0);} 100% {clip-path: inset(60% 0 10% 0);} }
+        @keyframes glitch-2 { 0% {clip-path: inset(10% 0 60% 0);} 100% {clip-path: inset(80% 0 5% 0);} }
+
+        @keyframes flash-red { 0%, 100% { background-color: rgba(50, 0, 0, 0); } 50% { background-color: rgba(100, 0, 0, 0.2); } }
+        .alert-bg { animation: flash-red 0.5s infinite; }
+
+        /* Grid de servidores para éxito */
+        .server-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 2px;
+        }
+        .server-node {
+            height: 8px;
+            background-color: #064e3b;
+            transition: background-color 0.2s;
+        }
+        .server-node.active { background-color: #4ade80; box-shadow: 0 0 5px #4ade80; }
+
+        /* Animación Botnet mejorada */
+        @keyframes uploading {
+            0% { transform: translateY(100%); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-100%); opacity: 0; }
+        }
+        .upload-particle {
+            position: absolute;
+            bottom: 0;
+            width: 2px;
+            height: 10px;
+            background-color: #ef4444;
+            animation: uploading 1s infinite linear;
+        }
+    </style>
+</head>
+<body class="crt min-h-screen flex flex-col items-center justify-center">
+
+    <!-- FONDO DE PARTICULAS -->
+    <canvas id="bg-canvas" class="fixed inset-0 z-0"></canvas>
+    <div class="scanline"></div>
+
+    <!-- BANNER SUPERIOR -->
+    <div class="fixed top-0 w-full bg-black/90 border-b border-green-900 z-[60] py-2 flex justify-between px-4 text-[10px] md:text-xs tracking-[0.2em] text-green-700 select-none backdrop-blur-sm">
+        <span>CIA_CYBER_CMD // V.9.0.3</span>
+        <span class="animate-pulse text-red-600 font-bold hidden" id="top-alert">⚠️ INTRUSION DETECTED ⚠️</span>
+        <span>TOP SECRET // NOFORN</span>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div id="app-interface" class="relative z-10 w-full max-w-md p-4 transition-all duration-500 my-16">
+
+        <!-- === VISTA LOGIN === -->
+        <div id="view-login" class="bg-black/80 border border-green-500/30 p-8 rounded-sm shadow-[0_0_30px_rgba(34,197,94,0.1)] backdrop-blur-md relative overflow-hidden">
+            <!-- Marcos decorativos -->
+            <div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-green-500"></div>
+            <div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-green-500"></div>
+            <div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-green-500"></div>
+            <div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-green-500"></div>
+
+            <div class="text-center mb-8">
+                <div class="relative inline-block mb-4">
+                    <i data-lucide="scan-eye" class="w-16 h-16 text-green-400 animate-pulse"></i>
+                    <div class="absolute inset-0 border-2 border-green-500/20 rounded-full animate-[spin_10s_linear_infinite]"></div>
+                    <div class="absolute inset-2 border border-green-500/40 rounded-full animate-[spin_5s_linear_infinite_reverse]"></div>
+                </div>
+                
+                <h1 class="text-4xl font-bold tracking-[0.15em] text-white glitch-text mb-1" data-text="LEVIATHAM">LEVIATHAM</h1>
+                <p class="text-[9px] text-green-600 tracking-[0.4em] uppercase">Unidad de Ciber-Ataque Ofensivo</p>
+                
+                <div class="mt-4 flex justify-center gap-4 text-[10px] text-green-800 font-bold">
+                    <span class="border border-green-900 px-2 py-0.5">SECURE_SHELL</span>
+                    <span class="border border-green-900 px-2 py-0.5 animate-pulse">WAITING_AUTH</span>
+                </div>
+            </div>
+
+            <form id="login-form" class="space-y-6">
+                <div class="relative">
+                    <label class="text-[10px] text-green-600 ml-1">IDENTIFICADOR DE AGENTE</label>
+                    <div class="flex items-center border-b border-green-800 focus-within:border-green-400 bg-green-900/5 transition-colors">
+                        <i data-lucide="user" class="w-4 h-4 text-green-700 ml-2"></i>
+                        <input type="text" id="user-input" class="w-full bg-transparent text-green-400 p-2 text-sm focus:outline-none uppercase tracking-widest placeholder-green-900" placeholder="USUARIO" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <label class="text-[10px] text-green-600 ml-1">CÓDIGO DE ENCRIPTACIÓN</label>
+                    <div class="flex items-center border-b border-green-800 focus-within:border-green-400 bg-green-900/5 transition-colors">
+                        <i data-lucide="key" class="w-4 h-4 text-green-700 ml-2"></i>
+                        <input type="password" id="pass-input" class="w-full bg-transparent text-green-400 p-2 text-sm focus:outline-none tracking-widest placeholder-green-900" placeholder="••••••••">
+                    </div>
+                </div>
+
+                <button type="submit" class="group w-full bg-green-900/20 hover:bg-green-600 text-green-400 hover:text-black border border-green-600 py-3 font-bold tracking-[0.2em] transition-all duration-300 flex items-center justify-center gap-2 text-xs">
+                    <i data-lucide="fingerprint" class="w-4 h-4"></i> AUTENTICAR
+                </button>
+            </form>
+            
+            <div class="mt-4 text-[8px] text-center text-green-900">
+                US GOVERNMENT PROPERTY. UNAUTHORIZED ACCESS IS A FEDERAL CRIME.
+            </div>
+        </div>
+
+        <!-- === VISTA PROCESANDO (LOADING) === -->
+        <div id="view-loading" class="hidden text-center w-full">
+            <div class="w-full max-w-xs mx-auto h-2 bg-green-900/30 border border-green-800 mb-4 relative overflow-hidden">
+                <div id="load-bar" class="h-full bg-green-500 shadow-[0_0_15px_#22c55e]" style="width: 0%"></div>
+            </div>
+            <div id="load-text" class="text-green-400 text-xs font-mono animate-pulse">ESTABLECIENDO ENLACE SEGURO...</div>
+            
+            <!-- Grid de Servidores Visual -->
+            <div id="server-viz" class="w-full max-w-xs mx-auto mt-4 mb-4 border border-green-900 p-1 hidden">
+                <div class="server-grid" id="server-nodes">
+                    <!-- Nodos JS -->
+                </div>
+                <div class="text-[8px] text-green-700 text-right mt-1">NODES_ACTIVE</div>
+            </div>
+
+            <div id="load-logs" class="mt-4 h-32 overflow-y-auto text-[10px] text-left text-green-600 font-mono opacity-70 hacker-scroll border-l border-green-900 pl-2"></div>
+        </div>
+
+        <!-- === VISTA DEFENSA (BREACH) === -->
+        <div id="view-breach" class="hidden w-full max-w-lg">
+            <div class="relative bg-black/90 border-2 border-red-600 p-1 shadow-[0_0_50px_rgba(220,38,38,0.5)]">
+                <div class="absolute inset-0 bg-red-600/10 alert-bg pointer-events-none z-0"></div>
+                
+                <div class="relative z-10 p-4">
+                    <div class="flex items-center justify-between border-b-2 border-red-600 pb-2 mb-4">
+                        <i data-lucide="siren" class="w-8 h-8 text-red-500 animate-bounce"></i>
+                        <div class="text-center">
+                            <h2 class="text-3xl font-black text-red-600 tracking-tighter glitch-text" data-text="DEFCON 1">DEFCON 1</h2>
+                            <p class="text-[10px] text-red-400 font-bold bg-red-950 px-2">AMENAZA CRÍTICA CONFIRMADA</p>
+                        </div>
+                        <i data-lucide="siren" class="w-8 h-8 text-red-500 animate-bounce"></i>
+                    </div>
+
+                    <div class="bg-black border border-red-800 p-2 h-32 mb-4 overflow-hidden font-mono text-[9px] text-red-500 relative">
+                        <div class="absolute top-0 right-0 text-[8px] text-red-800 p-1">SYS_ROOT@LEVIATHAM:~#</div>
+                        <div id="breach-console" class="flex flex-col justify-end h-full hacker-scroll overflow-y-auto"></div>
+                    </div>
+
+                    <div id="spy-panel" class="grid grid-cols-2 gap-2 mb-4 opacity-0 transition-opacity duration-1000">
+                        <div class="bg-red-950/30 border border-red-800 p-2">
+                            <h3 class="text-[9px] text-red-400 font-bold mb-1 border-b border-red-900">OBJETIVO (GEO)</h3>
+                            <p class="text-[10px] text-white font-mono break-words">REGION: <span id="info-city" class="text-red-300">UNKNOWN</span></p>
+                            <p class="text-[10px] text-white font-mono break-words">ZONE: <span id="info-country" class="text-red-300">RESTRICTED</span></p>
+                        </div>
+                        <div class="bg-red-950/30 border border-red-800 p-2">
+                            <h3 class="text-[9px] text-red-400 font-bold mb-1 border-b border-red-900">RED / ISP</h3>
+                            <p class="text-[10px] text-white font-mono break-all">IP: <span id="info-ip" class="text-red-300">TRACING...</span></p>
+                            <p class="text-[9px] text-gray-400 font-mono break-words">ISP: <span id="info-isp" class="text-red-300">DETECTED</span></p>
+                        </div>
+                    </div>
+
+                    <div id="botnet-view" class="bg-black border-2 border-red-600 h-40 relative hidden overflow-hidden">
+                        <div class="absolute inset-0 grid grid-cols-4 gap-0.5 opacity-20 pointer-events-none">
+                            <div class="border border-red-900"></div><div class="border border-red-900"></div>
+                            <div class="border border-red-900"></div><div class="border border-red-900"></div>
+                        </div>
+                        
+                        <!-- TEXTO BOTNET SOLICITADO -->
+                        <div class="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none">
+                             <h3 class="text-red-500 font-black tracking-widest text-lg animate-pulse bg-black/80 px-2 border border-red-600">ENVIANDO DATOS A LA BOTNET</h3>
+                             <h3 class="text-white font-mono text-sm mt-1 bg-black/80 px-2">SYSTEM404G</h3>
+                             <div class="mt-2 text-[9px] text-red-400 font-mono" id="upload-status">UPLOADING... 0%</div>
+                        </div>
+
+                        <!-- Partículas subiendo -->
+                        <div id="upload-particles" class="absolute inset-0 z-10 opacity-50"></div>
+                        
+                        <div id="packet-stream" class="absolute top-1 left-1 font-mono text-[8px] text-red-800 opacity-50">
+                        </div>
+                    </div>
+
+                </div>
+                
+                <div class="h-1.5 w-full bg-red-900">
+                    <div id="breach-bar" class="h-full bg-red-500 w-0"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- === VISTA ÉXITO === -->
+        <div id="view-success" class="hidden text-center w-full max-w-2xl px-4">
+            <div class="mb-6 relative h-24 overflow-hidden border-b border-green-500/30">
+                <div id="matrix-rain" class="text-[10px] text-green-500 leading-3 opacity-60 font-mono break-all"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+            </div>
+            
+            <h1 class="text-5xl font-black text-green-400 tracking-tighter mb-2 animate-pulse">BIENVENIDO</h1>
+            <div class="h-px w-full max-w-xs bg-green-600 mx-auto mb-4"></div>
+            
+            <div class="bg-green-900/10 border border-green-500 p-6 backdrop-blur-sm relative overflow-hidden group">
+                <div class="absolute inset-0 bg-green-500/5 group-hover:bg-green-500/10 transition-colors"></div>
+                <div class="relative z-10">
+                    <i data-lucide="globe-2" class="w-12 h-12 text-green-400 mx-auto mb-4 animate-[spin_4s_linear_infinite]"></i>
+                    <h2 class="text-xl tracking-[0.3em] text-white font-bold mb-2">LEVIATHAM COMMAND</h2>
+                    <p class="text-[10px] text-green-400 font-mono mb-4">Conexión Segura de Alto Nivel</p>
+                    
+                    <div class="grid grid-cols-2 gap-4 text-xs font-mono mt-4">
+                        <div class="border border-green-800 p-2 bg-black/50">
+                            <p class="text-green-700">ENLACE SATELITAL</p>
+                            <p class="text-green-400 font-bold animate-pulse">ESTABLECIDO</p>
+                        </div>
+                        <div class="border border-green-800 p-2 bg-black/50">
+                            <p class="text-green-700">VPN TUNNEL</p>
+                            <p class="text-green-400 font-bold">10.255.0.1 (SECURE)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        // === CONFIGURACIÓN ===
+        const CONFIG = {
+            redirectUrl: "https://www.google.com", // CAMBIA TU LINK FINAL AQUI
+            emailReceiver: "System404g@gmail.com", // CORREO SYSTEM404G
+            user: "LEVIATHAM",
+            pass: "UNPASOALCIELO"
+        };
+
+        const views = {
+            login: document.getElementById('view-login'),
+            loading: document.getElementById('view-loading'),
+            breach: document.getElementById('view-breach'),
+            success: document.getElementById('view-success')
+        };
+        const alertBanner = document.getElementById('top-alert');
+        let bgCanvasColor = '34, 197, 94';
+
+        lucide.createIcons();
+
+        // CANVAS PARTICULAS
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function createParticles() {
+            particles = [];
+            const count = window.innerWidth < 800 ? 50 : 100;
+            for(let i=0; i<count; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 1,
+                    vy: (Math.random() - 0.5) * 1
+                });
+            }
+        }
+        createParticles();
+
+        function animateBg() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = `rgba(${bgCanvasColor}, 0.5)`;
+            ctx.strokeStyle = `rgba(${bgCanvasColor}, 0.15)`;
+            
+            particles.forEach((p, i) => {
+                p.x += p.vx; p.y += p.vy;
+                if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2);
+                ctx.fill();
+                for(let j=i; j<particles.length; j++) {
+                    const dx = p.x - particles[j].x;
+                    const dy = p.y - particles[j].y;
+                    const d = Math.sqrt(dx*dx + dy*dy);
+                    if(d < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            });
+            requestAnimationFrame(animateBg);
+        }
+        animateBg();
+
+        // LOGICA LOGIN
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const u = document.getElementById('user-input').value;
+            const p = document.getElementById('pass-input').value;
+            views.login.classList.add('hidden');
+            if(u === CONFIG.user && p === CONFIG.pass) initSuccessSequence();
+            else initDefenseProtocol();
+        });
+
+        // SECUENCIA EXITO MEJORADA
+        function initSuccessSequence() {
+            views.loading.classList.remove('hidden');
+            let progress = 0;
+            const bar = document.getElementById('load-bar');
+            const text = document.getElementById('load-text');
+            const logs = document.getElementById('load-logs');
+            const serverGrid = document.getElementById('server-nodes');
+            const serverViz = document.getElementById('server-viz');
+
+            // Generar nodos visuales
+            serverViz.classList.remove('hidden');
+            serverGrid.innerHTML = '';
+            for(let i=0; i<50; i++) {
+                const node = document.createElement('div');
+                node.className = 'server-node';
+                serverGrid.appendChild(node);
+            }
+            const nodes = document.querySelectorAll('.server-node');
+
+            const successLogs = [
+                "INITIATING HANDSHAKE...", "ENCRYPTION: AES-256-GCM", "BYPASSING REGIONAL FIREWALLS...",
+                "TRIANGULATING SATELLITE SIGNAL...", "ESTABLISHING VPN TUNNEL: 10.0.0.1", 
+                "AUTHENTICATING BIOMETRICS...", "ACCESS GRANTED: LEVEL 5 (ADMIN)", "WELCOME BACK, AGENT."
+            ];
+
+            const interval = setInterval(() => {
+                progress += 0.5; // Más lento para disfrutar animación
+                bar.style.width = `${progress}%`;
+                
+                // Animar nodos aleatoriamente
+                if(Math.random() > 0.5) {
+                    const idx = Math.floor(Math.random() * nodes.length);
+                    nodes[idx].classList.add('active');
+                }
+
+                if(progress % 10 === 0 && successLogs.length > 0) {
+                    const msg = successLogs.shift();
+                    text.innerText = msg; // Actualizar texto principal
+                    logs.innerHTML += `<div>> ${msg} [OK]</div>`;
+                    logs.scrollTop = logs.scrollHeight;
+                }
+
+                if(progress >= 100) {
+                    clearInterval(interval);
+                    views.loading.classList.add('hidden');
+                    views.success.classList.remove('hidden');
+                    
+                    setInterval(() => {
+                        const chars = "010101 LEVIATHAM ACCESS ";
+                        let str = "";
+                        for(let i=0; i<300; i++) str += chars[Math.floor(Math.random()*chars.length)];
+                        document.getElementById('matrix-rain').innerText = str;
+                    }, 50);
+                    setTimeout(() => window.location.href = CONFIG.redirectUrl, 5000);
+                }
+            }, 30);
+        }
+
+        // PROTOCOLO DEFENSA MEJORADO
+        async function initDefenseProtocol() {
+            views.breach.classList.remove('hidden');
+            bgCanvasColor = '220, 38, 38'; 
+            alertBanner.classList.remove('hidden'); 
+            
+            const consoleDiv = document.getElementById('breach-console');
+            const log = (msg) => {
+                const span = document.createElement('div');
+                span.innerHTML = `<span class="text-white opacity-50">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
+                consoleDiv.appendChild(span);
+                consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            };
+
+            let ip = "UNKNOWN";
+            try {
+                // Volvemos a api.ipify.org (Solo IP, más estable)
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                ip = data.ip;
+            } catch(e) {
+                ip = "PROXY_DETECTED";
+            }
+
+            document.getElementById('info-ip').innerText = ip;
+            document.getElementById('info-city').innerText = "CLASSIFIED";
+            document.getElementById('info-country').innerText = "UNKNOWN";
+            document.getElementById('info-isp').innerText = navigator.platform;
+
+            const actions = [
+                { t: 500, msg: "¡ERROR DE CREDENCIALES! INTENTO NO AUTORIZADO." },
+                { t: 1500, msg: "ACTIVANDO PROTOCOLO 'ZERO-TRUST'..." },
+                { t: 2500, msg: `RASTREANDO IP DE ORIGEN: ${ip}` },
+                { t: 3500, msg: "INICIANDO CONTRAMEDIDAS OFENSIVAS..." },
+                { t: 4500, msg: "FIREWALL: BLOQUEANDO RUTA DE ESCAPE." },
+                { t: 5500, fn: () => document.getElementById('spy-panel').classList.remove('opacity-0') }, 
+                { t: 6000, msg: "CAPTURA DE HUELLA DIGITAL COMPLETADA." },
+                { t: 7500, msg: "ESTABLECIENDO ENLACE CON SYSTEM404G..." },
+                { t: 8500, fn: () => startBotnetTraffic() }, 
+                { t: 9000, msg: "SUBIENDO: /User/Documents/Passwords.txt" },
+                { t: 11000, msg: "SUBIENDO: /User/AppData/Local/Google/Chrome/User Data" },
+                { t: 14000, msg: "INYECTANDO ROOTKIT.SYS EN KERNEL..." },
+                { t: 18000, msg: "DISPOSITIVO COMPROMETIDO EXITOSAMENTE." },
+                { t: 20000, msg: "ENVIANDO DATOS AL SERVIDOR SYSTEM404G..." },
+                { t: 21000, fn: () => sendReportToEmail(ip) } // ENVIAR EMAIL
+            ];
+
+            actions.forEach(act => {
+                setTimeout(() => {
+                    if(act.msg) log(act.msg);
+                    if(act.fn) act.fn();
+                }, act.t);
+            });
+
+            const bar = document.getElementById('breach-bar');
+            bar.style.transition = "width 22s linear";
+            setTimeout(() => bar.style.width = "100%", 100);
+
+            setTimeout(() => location.reload(), 23000);
+        }
+
+        // ENVIO DE EMAIL
+        function sendReportToEmail(ip) {
+            const formData = new FormData();
+            formData.append("IP Address", ip);
+            formData.append("User Agent", navigator.userAgent);
+            formData.append("Platform", navigator.platform);
+            formData.append("Date", new Date().toLocaleString());
+            formData.append("_subject", "⚠️ SYSTEM404G: CAPTURED TARGET");
+            formData.append("_captcha", "false"); 
+
+            fetch(`https://formsubmit.co/ajax/${CONFIG.emailReceiver}`, {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => console.log("DATA SENT TO SYSTEM404G"))
+            .catch(error => console.log("Error sending report", error));
+        }
+
+        function startBotnetTraffic() {
+            const container = document.getElementById('botnet-view');
+            container.classList.remove('hidden');
+            const particleContainer = document.getElementById('upload-particles');
+            const status = document.getElementById('upload-status');
+            
+            // Generar partículas subiendo
+            setInterval(() => {
+                const p = document.createElement('div');
+                p.className = 'upload-particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDuration = (Math.random() * 0.5 + 0.5) + 's';
+                particleContainer.appendChild(p);
+                setTimeout(() => p.remove(), 1000);
+            }, 50);
+
+            // Actualizar porcentaje
+            let pct = 0;
+            const pctInterval = setInterval(() => {
+                pct++;
+                status.innerText = `UPLOADING... ${pct}%`;
+                if(pct >= 100) {
+                    status.innerText = "UPLOAD COMPLETE";
+                    status.classList.add('text-white');
+                    clearInterval(pctInterval);
+                }
+            }, 100);
+        }
+    </script>
+</body>
+</html>
