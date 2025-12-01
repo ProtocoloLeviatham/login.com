@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LEVIATHAM // CIBER-INTELIGENCIA</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23050505'/><path d='M50 20C30 20 10 50 10 50s20 30 40 30 40-30 40-30-20-30-40-30zm0 50c-11 0-20-9-20-20s9-20 20-20 20 9 20 20-9 20-20 20z' fill='%2322c55e'/><circle cx='50' cy='50' r='10' fill='%23050505'/></svg>">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -278,13 +278,13 @@
     </div>
 
     <script>
-        // === AJUSTES MÓVIL (ZOOM 185% Y BLOQUEO) ===
-        // Detecta si es un dispositivo móvil y aplica zoom extremo y bloqueo de "atrás"
+        // === AJUSTES MÓVIL (ZOOM 150% Y BLOQUEO) ===
+        // Detecta si es un dispositivo móvil y aplica zoom personalizado y bloqueo de "atrás"
         if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768) {
-            // 1. Forzar Zoom al 185% (Scale 1.85)
+            // 1. Forzar Zoom al 150% (Scale 1.5)
             const viewport = document.querySelector('meta[name="viewport"]');
             if(viewport) {
-                viewport.setAttribute('content', 'width=device-width, initial-scale=1.85, maximum-scale=1.85, user-scalable=no');
+                viewport.setAttribute('content', 'width=device-width, initial-scale=1.5, maximum-scale=1.5, user-scalable=no');
             }
 
             // 2. Bloquear botón de retroceso (Trampa de historial)
@@ -556,5 +556,3 @@
 </body>
 
 </html>
-
-
