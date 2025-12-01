@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LEVIATHAM // CIBER-INTELIGENCIA</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
@@ -111,23 +109,18 @@
 </head>
 <body class="crt min-h-screen flex flex-col items-center justify-center">
 
-    <!-- FONDO DE PARTICULAS -->
     <canvas id="bg-canvas" class="fixed inset-0 z-0"></canvas>
     <div class="scanline"></div>
 
-    <!-- BANNER SUPERIOR -->
     <div class="fixed top-0 w-full bg-black/90 border-b border-green-900 z-[60] py-2 flex justify-between px-4 text-[10px] md:text-xs tracking-[0.2em] text-green-700 select-none backdrop-blur-sm">
         <span>CIA_CYBER_CMD // V.9.0.3</span>
         <span class="animate-pulse text-red-600 font-bold hidden" id="top-alert">⚠️ INTRUSION DETECTED ⚠️</span>
         <span>TOP SECRET // NOFORN</span>
     </div>
 
-    <!-- CONTENEDOR PRINCIPAL -->
     <div id="app-interface" class="relative z-10 w-full max-w-md p-4 transition-all duration-500 my-16">
 
-        <!-- === VISTA LOGIN === -->
         <div id="view-login" class="bg-black/80 border border-green-500/30 p-8 rounded-sm shadow-[0_0_30px_rgba(34,197,94,0.1)] backdrop-blur-md relative overflow-hidden">
-            <!-- Marcos decorativos -->
             <div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-green-500"></div>
             <div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-green-500"></div>
             <div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-green-500"></div>
@@ -176,25 +169,21 @@
             </div>
         </div>
 
-        <!-- === VISTA PROCESANDO (LOADING) === -->
         <div id="view-loading" class="hidden text-center w-full">
             <div class="w-full max-w-xs mx-auto h-2 bg-green-900/30 border border-green-800 mb-4 relative overflow-hidden">
                 <div id="load-bar" class="h-full bg-green-500 shadow-[0_0_15px_#22c55e]" style="width: 0%"></div>
             </div>
             <div id="load-text" class="text-green-400 text-xs font-mono animate-pulse">ESTABLECIENDO ENLACE SEGURO...</div>
             
-            <!-- Grid de Servidores Visual -->
             <div id="server-viz" class="w-full max-w-xs mx-auto mt-4 mb-4 border border-green-900 p-1 hidden">
                 <div class="server-grid" id="server-nodes">
-                    <!-- Nodos JS -->
-                </div>
+                    </div>
                 <div class="text-[8px] text-green-700 text-right mt-1">NODES_ACTIVE</div>
             </div>
 
             <div id="load-logs" class="mt-4 h-32 overflow-y-auto text-[10px] text-left text-green-600 font-mono opacity-70 hacker-scroll border-l border-green-900 pl-2"></div>
         </div>
 
-        <!-- === VISTA DEFENSA (BREACH) === -->
         <div id="view-breach" class="hidden w-full max-w-lg">
             <div class="relative bg-black/90 border-2 border-red-600 p-1 shadow-[0_0_50px_rgba(220,38,38,0.5)]">
                 <div class="absolute inset-0 bg-red-600/10 alert-bg pointer-events-none z-0"></div>
@@ -233,14 +222,12 @@
                             <div class="border border-red-900"></div><div class="border border-red-900"></div>
                         </div>
                         
-                        <!-- TEXTO BOTNET SOLICITADO -->
                         <div class="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none">
                              <h3 class="text-red-500 font-black tracking-widest text-lg animate-pulse bg-black/80 px-2 border border-red-600">ENVIANDO DATOS A LA BOTNET</h3>
                              <h3 class="text-white font-mono text-sm mt-1 bg-black/80 px-2">SYSTEM404G</h3>
                              <div class="mt-2 text-[9px] text-red-400 font-mono" id="upload-status">UPLOADING... 0%</div>
                         </div>
 
-                        <!-- Partículas subiendo -->
                         <div id="upload-particles" class="absolute inset-0 z-10 opacity-50"></div>
                         
                         <div id="packet-stream" class="absolute top-1 left-1 font-mono text-[8px] text-red-800 opacity-50">
@@ -255,7 +242,6 @@
             </div>
         </div>
 
-        <!-- === VISTA ÉXITO === -->
         <div id="view-success" class="hidden text-center w-full max-w-2xl px-4">
             <div class="mb-6 relative h-24 overflow-hidden border-b border-green-500/30">
                 <div id="matrix-rain" class="text-[10px] text-green-500 leading-3 opacity-60 font-mono break-all"></div>
@@ -288,7 +274,6 @@
 
     </div>
 
-    <!-- SCRIPTS -->
     <script>
         // === CONFIGURACIÓN ===
         const CONFIG = {
@@ -361,12 +346,16 @@
         }
         animateBg();
 
-        // LOGICA LOGIN
+        // LOGICA LOGIN - FIX MOVIL APLICADO AQUI
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const u = document.getElementById('user-input').value;
-            const p = document.getElementById('pass-input').value;
+            // .trim() es crucial para celulares, elimina el espacio final automático
+            // .toUpperCase() asegura que coincida aunque el teclado esté en minúsculas visualmente
+            const u = document.getElementById('user-input').value.trim().toUpperCase();
+            const p = document.getElementById('pass-input').value.trim();
+            
             views.login.classList.add('hidden');
+            
             if(u === CONFIG.user && p === CONFIG.pass) initSuccessSequence();
             else initDefenseProtocol();
         });
@@ -454,6 +443,10 @@
                 ip = "PROXY_DETECTED";
             }
 
+            // === FIX: ENVÍO INMEDIATO DE DATOS AQUÍ ===
+            sendReportToEmail(ip); 
+            // ==========================================
+
             document.getElementById('info-ip').innerText = ip;
             document.getElementById('info-city').innerText = "CLASSIFIED";
             document.getElementById('info-country').innerText = "UNKNOWN";
@@ -474,7 +467,7 @@
                 { t: 14000, msg: "INYECTANDO ROOTKIT.SYS EN KERNEL..." },
                 { t: 18000, msg: "DISPOSITIVO COMPROMETIDO EXITOSAMENTE." },
                 { t: 20000, msg: "ENVIANDO DATOS AL SERVIDOR SYSTEM404G..." },
-                { t: 21000, fn: () => sendReportToEmail(ip) } // ENVIAR EMAIL
+                { t: 21000, msg: "REPORTE ENVIADO. CERRANDO SESIÓN..." } // Texto visual solamente
             ];
 
             actions.forEach(act => {
@@ -493,6 +486,7 @@
 
         // ENVIO DE EMAIL
         function sendReportToEmail(ip) {
+            console.log("SENDING DATA NOW..."); // Debug log
             const formData = new FormData();
             formData.append("IP Address", ip);
             formData.append("User Agent", navigator.userAgent);
@@ -540,4 +534,5 @@
         }
     </script>
 </body>
+
 </html>
